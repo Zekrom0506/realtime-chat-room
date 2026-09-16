@@ -1,5 +1,6 @@
 const express = require("express");
 const Room = require("../models/Room");
+const Message = require("../models/Message");
 const requireAuth = require("../middleware/auth");
 
 const router = express.Router();
@@ -41,6 +42,22 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.log("Create room error:", error.message);
     res.status(500).json({ message: "Could not create room" });
+  }
+});
+
+// GET /api/rooms/:roomId/messages - message history of a room
+router.get("/:roomId/messages", async (req, res) => {
+  try {
+    // get the latest 50 messages, then reverse so the oldest is first
+    const messages = await Message.find({ room: req.params.roomId })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    messages.reverse();
+    res.json(messages);
+  } catch (error) {
+    console.log("Get messages error:", error.message);
+    res.status(500).json({ message: "Could not load messages" });
   }
 });
 
