@@ -3,12 +3,17 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const Room = require("./models/Room");
 const Message = require("./models/Message");
+const { publishEvent } = require("./redis");
 
-// keeps track of which sockets are in which room
+// name of this server copy, used to show which copy handled a message
+const SERVER_NAME = process.env.SERVER_NAME || "server-local";
+
+// keeps track of which sockets are in which room ON THIS SERVER COPY
+// users connected to the other copy are not in this object
 // example: { "roomId1": Set(socketA, socketB), "roomId2": Set(socketC) }
 const roomSockets = {};
 
-// send data to every socket in a room
+// send data to every socket in a room that is connected to this server copy
 function broadcastToRoom(roomId, data) {
   const sockets = roomSockets[roomId];
   if (!sockets) {
@@ -41,10 +46,12 @@ function leaveRoom(socket) {
 
   socket.roomId = null;
 
-  broadcastToRoom(roomId, {
+  publishEvent({
     type: "system",
     roomId: roomId,
     text: socket.username + " left the room",
+  }).catch((error) => {
+    console.log("Redis publish error:", error.message);
   });
 }
 
@@ -73,14 +80,14 @@ async function joinRoom(socket, roomId) {
 
   socket.send(JSON.stringify({ type: "joined", roomId: roomId }));
 
-  broadcastToRoom(roomId, {
+  await publishEvent({
     type: "system",
     roomId: roomId,
     text: socket.username + " joined the room",
   });
 }
 
-// save a chat message and send it to everyone in the room
+// save a chat message and publish it to Redis
 async function handleChatMessage(socket, text) {
   if (!socket.roomId) {
     socket.send(JSON.stringify({ type: "error", message: "Join a room first" }));
@@ -98,14 +105,23 @@ async function handleChatMessage(socket, text) {
     text: text.trim().slice(0, 500),
   });
 
-  broadcastToRoom(socket.roomId, {
+  // we do NOT send the message to the sockets directly here.
+  // we publish it to Redis, and every server copy (this one too)
+  // receives it in handleRedisEvent and sends it to its own sockets.
+  await publishEvent({
     type: "message",
     roomId: socket.roomId,
     _id: savedMessage._id,
     username: savedMessage.username,
     text: savedMessage.text,
     createdAt: savedMessage.createdAt,
+    server: SERVER_NAME,
   });
+}
+
+// called for every event that arrives from Redis
+function handleRedisEvent(event) {
+  broadcastToRoom(event.roomId, event);
 }
 
 // attach the WebSocket server to our existing HTTP server
@@ -126,7 +142,10 @@ function setupWebSocket(server) {
     }
 
     socket.roomId = null;
-    console.log(socket.username + " connected");
+    console.log(socket.username + " connected to " + SERVER_NAME);
+
+    // tell the client which server copy it is connected to
+    socket.send(JSON.stringify({ type: "connected", server: SERVER_NAME }));
 
     socket.on("message", async (rawData) => {
       try {
@@ -149,4 +168,4 @@ function setupWebSocket(server) {
   });
 }
 
-module.exports = { setupWebSocket, broadcastToRoom };
+module.exports = { setupWebSocket, handleRedisEvent };
