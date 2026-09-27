@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AuthPage from "./pages/AuthPage.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
 
 // read the logged in user from localStorage so a page refresh keeps you logged in
 function getSavedUser() {
@@ -28,12 +29,7 @@ function App() {
     return <AuthPage onLogin={handleLogin} />;
   }
 
-  return (
-    <div>
-      <p>Logged in as {user.username}</p>
-      <button onClick={handleLogout}>Log out</button>
-    </div>
-  );
+  return <ChatPage user={user} onLogout={handleLogout} />;
 }
 
 export default App;

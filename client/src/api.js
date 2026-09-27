@@ -35,3 +35,11 @@ export function registerUser(username, password) {
 export function loginUser(username, password) {
   return request("/auth/login", "POST", { username, password });
 }
+
+export function getRooms(token) {
+  return request("/rooms", "GET", null, token);
+}
+
+export function createRoom(name, token) {
+  return request("/rooms", "POST", { name }, token);
+}
