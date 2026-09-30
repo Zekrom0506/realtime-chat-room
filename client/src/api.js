@@ -43,3 +43,7 @@ export function getRooms(token) {
 export function createRoom(name, token) {
   return request("/rooms", "POST", { name }, token);
 }
+
+export function getMessages(roomId, token) {
+  return request("/rooms/" + roomId + "/messages", "GET", null, token);
+}

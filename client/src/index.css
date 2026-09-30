@@ -221,3 +221,112 @@ input {
   background-color: #2f5bea;
   color: white;
 }
+
+/* ---------- connection status ---------- */
+
+.status {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.status.online {
+  background-color: #2e7d32;
+}
+
+.status.offline {
+  background-color: #c62828;
+}
+
+/* ---------- messages ---------- */
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message {
+  max-width: 70%;
+  align-self: flex-start;
+  background-color: #eef1f6;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.message.mine {
+  align-self: flex-end;
+  background-color: #dbe4ff;
+}
+
+.message-info {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 2px;
+  display: flex;
+  gap: 8px;
+}
+
+.message-user {
+  font-weight: bold;
+  color: #333;
+}
+
+.message-server {
+  font-style: italic;
+}
+
+.message-text {
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+.system-message {
+  align-self: center;
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+}
+
+.message-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.message-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.message-input button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 4px;
+  background-color: #2f5bea;
+  color: white;
+}
+
+.message-input button:disabled {
+  background-color: #9fb2f3;
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 600px) {
+  .room-list {
+    width: 140px;
+  }
+
+  .header-right span:not(.status) {
+    display: none;
+  }
+}
