@@ -120,7 +120,6 @@ function ChatPage({ user, onLogout }) {
         socketRef.current.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.token]);
 
   async function handleCreateRoom(name) {
